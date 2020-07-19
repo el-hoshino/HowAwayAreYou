@@ -10,7 +10,7 @@ import SwiftUI
 import UIKit
 
 protocol ProcessedImageInputObject: ObservableObject {
-    var image: UIImage { get }
+    var imageData: ImageData? { get }
     typealias Target = (position: CGPoint, scale: CGFloat, scaleCriterionLengthKeyPath: KeyPath<CGSize, CGFloat>, distance: CGFloat)
     var target: Target? { get }
 }
@@ -42,7 +42,7 @@ struct ProcessedImageDisplayView<ImageInput: ProcessedImageInputObject>: View {
     }
     
     var body: some View {
-        Image(uiImage: imageInput.image)
+        Image.from(imageInput.imageData?.image)
             .resizable()
             .aspectRatio(contentMode: .fill)
             .overlay(GeometryReader { (proxy) in
@@ -107,12 +107,79 @@ private extension CGPoint {
     
 }
 
+private extension Image.Orientation {
+    
+    var uiOrientation: UIImage.Orientation {
+        switch self {
+        case .right:
+            return .right
+            
+        default:
+            return .up
+        }
+    }
+    
+}
+
+private extension Image {
+    
+    static func from(_ uiImage: UIImage?) -> Image {
+        
+        guard let uiImage = uiImage else {
+            return Image(uiImage: UIImage())
+        }
+        
+        // Seems like there's a bug while directly generate Image from rotated UIImage that aspectRatio can't retrieved the correct rotated width/height,
+        // so as a workaround, generate Image from the UIImage's CGImage.
+        return Image(decorative: uiImage.cgImage!, scale: uiImage.scale, orientation: uiImage.imageOrientation.swiftOrientation)
+        
+    }
+    
+}
+
+private extension UIImage.Orientation {
+    
+    private func transformToSwiftRawValue(from uiRawValue: Int) -> UInt8 {
+        
+        /*
+         | RawValue | UIImage.Orientation | Image.Orientation |
+         |:--------:|--------------------:|:------------------|
+         |         0|                  up | up                |
+         |         1|                down | left              |
+         |         2|                left | upMirrored        |
+         |         3|               right | leftMirrored      |
+         |         4|          upMirrored | downMirrored      |
+         |         5|        downMirrored | rightMirrored     |
+         |         6|        leftMirrored | down              |
+         |         7|       rightMirrored | right             |
+         */
+        
+        if uiRawValue % 2 == 0 {
+            return UInt8(uiRawValue / 2)
+            
+        } else if uiRawValue > Image.Orientation.allCases.count / 2 {
+            return UInt8(uiRawValue / 2 + 2)
+            
+        } else {
+            return UInt8(uiRawValue / 2 + 6)
+        }
+        
+    }
+    
+    var swiftOrientation: Image.Orientation {
+        let uiRawValue = rawValue
+        let swiftRawValue = transformToSwiftRawValue(from: uiRawValue)
+        return Image.Orientation(rawValue: swiftRawValue)!
+    }
+    
+}
+
 struct CameraFinderView_Preview: PreviewProvider {
     
     final class MockImageInput: ProcessedImageInputObject {
         
-        var image: UIImage {
-            #imageLiteral(resourceName: "DummyBackground")
+        var imageData: ImageData? {
+           ImageData(uiImage:  #imageLiteral(resourceName: "DummyBackground"))
         }
         
         var timer: Timer!

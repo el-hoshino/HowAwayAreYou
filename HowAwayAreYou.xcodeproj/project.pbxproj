@@ -22,6 +22,7 @@
 		BF27685324BB1E3300CC2CCF /* CameraIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27685224BB1E3300CC2CCF /* CameraIO.swift */; };
 		BF27685524BB1E6800CC2CCF /* Vision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF27685424BB1E6800CC2CCF /* Vision.framework */; };
 		BF3258F424C493D4001A3A5F /* ImageData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3258F324C493D4001A3A5F /* ImageData.swift */; };
+		BF3258F824C4CE22001A3A5F /* TargetInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3258F724C4CE22001A3A5F /* TargetInfo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 		BF27685224BB1E3300CC2CCF /* CameraIO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraIO.swift; sourceTree = "<group>"; };
 		BF27685424BB1E6800CC2CCF /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
 		BF3258F324C493D4001A3A5F /* ImageData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageData.swift; sourceTree = "<group>"; };
+		BF3258F724C4CE22001A3A5F /* TargetInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetInfo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -195,6 +197,7 @@
 			isa = PBXGroup;
 			children = (
 				BF3258F324C493D4001A3A5F /* ImageData.swift */,
+				BF3258F724C4CE22001A3A5F /* TargetInfo.swift */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -330,6 +333,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF3258F824C4CE22001A3A5F /* TargetInfo.swift in Sources */,
 				BF27684F24BB1D6300CC2CCF /* ImageProcessor.swift in Sources */,
 				BF27681724BB1AC200CC2CCF /* AppDelegate.swift in Sources */,
 				BF27685324BB1E3300CC2CCF /* CameraIO.swift in Sources */,

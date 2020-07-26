@@ -9,18 +9,21 @@
 import Foundation
 import Combine
 import AVFoundation
-import CoreImage
 
 final class CameraIO {
     
     let captureSession: AVCaptureSession
     let captureDevice: AVCaptureDevice
     
+    private let videoDataOutput: AVCaptureVideoDataOutput
+    private let depthDataOutput: AVCaptureDepthDataOutput
+    private let faceOutput: AVCaptureMetadataOutput
     private let captureOutputReceiver: CaptureOutputReceiver
+    private let synchronizer: AVCaptureDataOutputSynchronizer
     private let outputProcessQueue = DispatchQueue(label: "CameraIO")
     
-    let outputSampleBufferPublisher: CurrentValueSubject<CMSampleBuffer?, Never> = .init(nil)
-    let outputDepthDataPublisher: CurrentValueSubject<AVDepthData?, Never> = .init(nil)
+    typealias SynchronizedData = (sampleBuffer: CMSampleBuffer, depthData: AVDepthData, facesBounds: [CGRect])
+    let synchronizedDataPublisher: CurrentValueSubject<SynchronizedData?, Never> = .init(nil)
     
     enum CameraIOInitError: Error {
         case failedToFindDevice
@@ -28,9 +31,9 @@ final class CameraIO {
     
     init() throws {
         
-        guard let device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTrueDepthCamera],
+        guard let device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInDualCamera, .builtInTripleCamera],
                                                             mediaType: .depthData,
-                                                            position: .front)
+                                                            position: .back)
         .devices.first else {
             throw CameraIOInitError.failedToFindDevice
         }
@@ -38,112 +41,118 @@ final class CameraIO {
         let session = AVCaptureSession()
         
         session.beginConfiguration()
+        defer { session.commitConfiguration() }
         
         session.sessionPreset = .photo
         
         let input = try AVCaptureDeviceInput(device: device)
         session.addInput(input)
         
-        let videoDataOutput = AVCaptureVideoDataOutput()
-        let depthDataOutput = AVCaptureDepthDataOutput()
         let receiver = CaptureOutputReceiver()
+                
+        let videoDataOutput = AVCaptureVideoDataOutput()
         videoDataOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey: videoDataOutput.availableVideoPixelFormatTypes[0]] as [String: Any]
-        videoDataOutput.setSampleBufferDelegate(receiver, queue: outputProcessQueue)
-        depthDataOutput.setDelegate(receiver, callbackQueue: outputProcessQueue)
         session.addOutput(videoDataOutput)
+        
+        let depthDataOutput = AVCaptureDepthDataOutput()
+        depthDataOutput.isFilteringEnabled = true
         session.addOutput(depthDataOutput)
         
-        depthDataOutput.isFilteringEnabled = true
+        let faceOutput = AVCaptureMetadataOutput()
+        session.addOutput(faceOutput)
+        faceOutput.metadataObjectTypes = [.face]
         
-        let depthFormats = device.activeFormat.supportedDepthDataFormats
-        let filtered = depthFormats.filter({
-            CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat32
-        })
-        let selectedFormat = filtered.max(by: {
-            first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
-        })
-
-        try device.lockForConfiguration()
-        device.activeDepthDataFormat = selectedFormat
-        device.unlockForConfiguration()
-
-        session.commitConfiguration()
-
+        let synchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [videoDataOutput, depthDataOutput, faceOutput])
+        synchronizer.setDelegate(receiver, queue: outputProcessQueue)
+        
+        try device.setupBestActiveDepthFormat()
+                
+        self.videoDataOutput = videoDataOutput
+        self.depthDataOutput = depthDataOutput
+        self.faceOutput = faceOutput
         self.captureSession = session
         self.captureDevice = device
         self.captureOutputReceiver = receiver
+        self.synchronizer = synchronizer
         
         receiver.delegate = self
-        
-        session.startRunning()
-        
+                
     }
     
 }
 
 extension CameraIO: CaptureOutputDelegate {
     
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connections: AVCaptureConnection) {
-        outputSampleBufferPublisher.send(sampleBuffer)
-    }
-    
-    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        outputSampleBufferPublisher.send(nil)
-    }
-    
-    func depthDataOutput(_ output: AVCaptureDepthDataOutput, didOutput depthData: AVDepthData, timestamp: CMTime, connection: AVCaptureConnection) {
+    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
         
-        let point = CGPoint(x: 30, y: 30)
-        CVPixelBufferLockBaseAddress(depthData.depthDataMap, CVPixelBufferLockFlags(rawValue: 0))
-        let depthPointer = unsafeBitCast(CVPixelBufferGetBaseAddress(depthData.depthDataMap), to: UnsafeMutablePointer<Float32>.self)
-        let width = CVPixelBufferGetWidth(depthData.depthDataMap)
-        let distanceAtXYPoint = depthPointer[Int(point.y * CGFloat(width) + point.x)]
-        print(distanceAtXYPoint)
-        outputDepthDataPublisher.send(depthData)
-    }
-    
-    func depthDataOutput(_ output: AVCaptureDepthDataOutput, didDrop depthData: AVDepthData, timestamp: CMTime, connection: AVCaptureConnection, reason: AVCaptureOutput.DataDroppedReason) {
-        outputDepthDataPublisher.send(nil)
+        guard let sampleBuffer = synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else { return }
+        guard let depthData = synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData else { return }
+        let faces = synchronizedDataCollection.synchronizedData(for: faceOutput) as! AVCaptureSynchronizedMetadataObjectData?
+        
+        self.synchronizedDataPublisher.send((sampleBuffer.sampleBuffer, depthData.depthData, faces?.metadataObjects.map { $0.bounds } ?? []))
+        
     }
     
 }
 
 private protocol CaptureOutputDelegate: AnyObject {
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connections: AVCaptureConnection)
-    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection)
-    func depthDataOutput(_ output: AVCaptureDepthDataOutput, didOutput depthData: AVDepthData, timestamp: CMTime, connection: AVCaptureConnection)
-    func depthDataOutput(_ output: AVCaptureDepthDataOutput, didDrop depthData: AVDepthData, timestamp: CMTime, connection: AVCaptureConnection, reason: AVCaptureOutput.DataDroppedReason)
+    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection)
 }
 
-private final class CaptureOutputReceiver: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureDepthDataOutputDelegate {
+private final class CaptureOutputReceiver: NSObject, AVCaptureDataOutputSynchronizerDelegate {
     
     weak var delegate: CaptureOutputDelegate?
     
-    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        delegate?.captureOutput(output, didOutput: sampleBuffer, from: connection)
-    }
-    
-    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        delegate?.captureOutput(output, didDrop: sampleBuffer, from: connection)
-    }
-    
-    func depthDataOutput(_ output: AVCaptureDepthDataOutput, didOutput depthData: AVDepthData, timestamp: CMTime, connection: AVCaptureConnection) {
-        delegate?.depthDataOutput(output, didOutput: depthData, timestamp: timestamp, connection: connection)
-    }
-    
-    func depthDataOutput(_ output: AVCaptureDepthDataOutput, didDrop depthData: AVDepthData, timestamp: CMTime, connection: AVCaptureConnection, reason: AVCaptureOutput.DataDroppedReason) {
-        delegate?.depthDataOutput(output, didDrop: depthData, timestamp: timestamp, connection: connection, reason: reason)
+    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer, didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection) {
+        delegate?.dataOutputSynchronizer(synchronizer, didOutput: synchronizedDataCollection)
     }
     
 }
 
 extension CameraIO: ImageProcessorInput {
     
-    var cvPixelBufferPublisher: AnyPublisher<CVPixelBuffer?, Never> {
-        return outputDepthDataPublisher.map {
-            guard let depthData = $0 else { return nil }
-            return depthData.depthDataMap
+    var running: Bool {
+        get {
+            captureSession.isRunning
+        }
+        set {
+            if newValue {
+                captureSession.startRunning()
+            } else {
+                captureSession.stopRunning()
+            }
+        }
+    }
+    
+    var dataPublisher: AnyPublisher<ImageProcessorInput.Data?, Never> {
+        synchronizedDataPublisher.map {
+            guard let data = $0 else { return nil }
+            let sampleBuffer = CMSampleBufferGetImageBuffer(data.sampleBuffer)!
+            let depthData = data.depthData.depthDataMap
+            let facesBounds = data.facesBounds
+            return (sampleBuffer, depthData, facesBounds)
         }.eraseToAnyPublisher()
+    }
+    
+}
+
+private extension AVCaptureDevice {
+    
+    func setupBestActiveDepthFormat() throws {
+        
+        let depthFormats = activeFormat.supportedDepthDataFormats
+        let filtered = depthFormats.filter({
+            CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat32
+        })
+        let selectedFormat = filtered.max(by: {
+            first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
+        })
+        
+        try lockForConfiguration()
+        defer { unlockForConfiguration() }
+        
+        activeDepthDataFormat = selectedFormat
+        
     }
     
 }

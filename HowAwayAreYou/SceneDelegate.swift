@@ -13,8 +13,9 @@ import Combine
 import CoreMedia
 
 private final class MockCamera: ImageProcessorInput {
-    let publisher: PassthroughSubject<CVPixelBuffer?, Never> = .init()
-    var cvPixelBufferPublisher: AnyPublisher<CVPixelBuffer?, Never> {
+    var running: Bool = false
+    let publisher: PassthroughSubject<ImageProcessorInput.Data?, Never> = .init()
+    var dataPublisher: AnyPublisher<ImageProcessorInput.Data?, Never> {
         publisher.eraseToAnyPublisher()
     }
 }

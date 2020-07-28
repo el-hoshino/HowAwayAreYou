@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BF141E6C24C24FE100F9F90D /* SightMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF141E6B24C24FE100F9F90D /* SightMarkView.swift */; };
 		BF27681724BB1AC200CC2CCF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27681624BB1AC200CC2CCF /* AppDelegate.swift */; };
 		BF27681924BB1AC200CC2CCF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27681824BB1AC200CC2CCF /* SceneDelegate.swift */; };
 		BF27681B24BB1AC200CC2CCF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27681A24BB1AC200CC2CCF /* ContentView.swift */; };
@@ -15,6 +16,15 @@
 		BF27682324BB1AC600CC2CCF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BF27682124BB1AC600CC2CCF /* LaunchScreen.storyboard */; };
 		BF27682E24BB1AC600CC2CCF /* HowAwayAreYouTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27682D24BB1AC600CC2CCF /* HowAwayAreYouTests.swift */; };
 		BF27683924BB1AC600CC2CCF /* HowAwayAreYouUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27683824BB1AC600CC2CCF /* HowAwayAreYouUITests.swift */; };
+		BF27684924BB1B9A00CC2CCF /* ProcessedImageDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27684824BB1B9A00CC2CCF /* ProcessedImageDisplayView.swift */; };
+		BF27684C24BB1BB300CC2CCF /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF27684B24BB1BB300CC2CCF /* AVFoundation.framework */; };
+		BF27684F24BB1D6300CC2CCF /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27684E24BB1D6300CC2CCF /* ImageProcessor.swift */; };
+		BF27685324BB1E3300CC2CCF /* CameraIO.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF27685224BB1E3300CC2CCF /* CameraIO.swift */; };
+		BF27685524BB1E6800CC2CCF /* Vision.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF27685424BB1E6800CC2CCF /* Vision.framework */; };
+		BF3258F424C493D4001A3A5F /* ImageData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3258F324C493D4001A3A5F /* ImageData.swift */; };
+		BF3258F624C4C178001A3A5F /* CVPixelBuffer+.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3258F524C4C178001A3A5F /* CVPixelBuffer+.swift */; };
+		BF3258F824C4CE22001A3A5F /* TargetInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3258F724C4CE22001A3A5F /* TargetInfo.swift */; };
+		BF7FF79724CB8F720075DAF1 /* Sequence+.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7FF79624CB8F720075DAF1 /* Sequence+.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -35,6 +45,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BF141E6B24C24FE100F9F90D /* SightMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightMarkView.swift; sourceTree = "<group>"; };
 		BF27681324BB1AC200CC2CCF /* HowAwayAreYou.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HowAwayAreYou.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF27681624BB1AC200CC2CCF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF27681824BB1AC200CC2CCF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -49,6 +60,15 @@
 		BF27683424BB1AC600CC2CCF /* HowAwayAreYouUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HowAwayAreYouUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF27683824BB1AC600CC2CCF /* HowAwayAreYouUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HowAwayAreYouUITests.swift; sourceTree = "<group>"; };
 		BF27683A24BB1AC600CC2CCF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BF27684824BB1B9A00CC2CCF /* ProcessedImageDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessedImageDisplayView.swift; sourceTree = "<group>"; };
+		BF27684B24BB1BB300CC2CCF /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		BF27684E24BB1D6300CC2CCF /* ImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
+		BF27685224BB1E3300CC2CCF /* CameraIO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraIO.swift; sourceTree = "<group>"; };
+		BF27685424BB1E6800CC2CCF /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
+		BF3258F324C493D4001A3A5F /* ImageData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageData.swift; sourceTree = "<group>"; };
+		BF3258F524C4C178001A3A5F /* CVPixelBuffer+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+.swift"; sourceTree = "<group>"; };
+		BF3258F724C4CE22001A3A5F /* TargetInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetInfo.swift; sourceTree = "<group>"; };
+		BF7FF79624CB8F720075DAF1 /* Sequence+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sequence+.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +76,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF27685524BB1E6800CC2CCF /* Vision.framework in Frameworks */,
+				BF27684C24BB1BB300CC2CCF /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +105,7 @@
 				BF27682C24BB1AC600CC2CCF /* HowAwayAreYouTests */,
 				BF27683724BB1AC600CC2CCF /* HowAwayAreYouUITests */,
 				BF27681424BB1AC200CC2CCF /* Products */,
+				BF27684A24BB1BB300CC2CCF /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -102,6 +125,10 @@
 				BF27681624BB1AC200CC2CCF /* AppDelegate.swift */,
 				BF27681824BB1AC200CC2CCF /* SceneDelegate.swift */,
 				BF27681A24BB1AC200CC2CCF /* ContentView.swift */,
+				BF27684724BB1B7500CC2CCF /* UI */,
+				BF27684D24BB1D2B00CC2CCF /* Domain */,
+				BF27685124BB1E0E00CC2CCF /* Infra */,
+				BF3258F224C4938E001A3A5F /* Data */,
 				BF27681C24BB1AC600CC2CCF /* Assets.xcassets */,
 				BF27682124BB1AC600CC2CCF /* LaunchScreen.storyboard */,
 				BF27682424BB1AC600CC2CCF /* Info.plist */,
@@ -134,6 +161,51 @@
 				BF27683A24BB1AC600CC2CCF /* Info.plist */,
 			);
 			path = HowAwayAreYouUITests;
+			sourceTree = "<group>";
+		};
+		BF27684724BB1B7500CC2CCF /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				BF27684824BB1B9A00CC2CCF /* ProcessedImageDisplayView.swift */,
+				BF141E6B24C24FE100F9F90D /* SightMarkView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		BF27684A24BB1BB300CC2CCF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BF27685424BB1E6800CC2CCF /* Vision.framework */,
+				BF27684B24BB1BB300CC2CCF /* AVFoundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BF27684D24BB1D2B00CC2CCF /* Domain */ = {
+			isa = PBXGroup;
+			children = (
+				BF27684E24BB1D6300CC2CCF /* ImageProcessor.swift */,
+			);
+			path = Domain;
+			sourceTree = "<group>";
+		};
+		BF27685124BB1E0E00CC2CCF /* Infra */ = {
+			isa = PBXGroup;
+			children = (
+				BF27685224BB1E3300CC2CCF /* CameraIO.swift */,
+			);
+			path = Infra;
+			sourceTree = "<group>";
+		};
+		BF3258F224C4938E001A3A5F /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				BF3258F324C493D4001A3A5F /* ImageData.swift */,
+				BF3258F724C4CE22001A3A5F /* TargetInfo.swift */,
+				BF3258F524C4C178001A3A5F /* CVPixelBuffer+.swift */,
+				BF7FF79624CB8F720075DAF1 /* Sequence+.swift */,
+			);
+			path = Data;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -267,9 +339,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF3258F824C4CE22001A3A5F /* TargetInfo.swift in Sources */,
+				BF27684F24BB1D6300CC2CCF /* ImageProcessor.swift in Sources */,
 				BF27681724BB1AC200CC2CCF /* AppDelegate.swift in Sources */,
+				BF27685324BB1E3300CC2CCF /* CameraIO.swift in Sources */,
+				BF27684924BB1B9A00CC2CCF /* ProcessedImageDisplayView.swift in Sources */,
+				BF7FF79724CB8F720075DAF1 /* Sequence+.swift in Sources */,
+				BF3258F624C4C178001A3A5F /* CVPixelBuffer+.swift in Sources */,
 				BF27681924BB1AC200CC2CCF /* SceneDelegate.swift in Sources */,
 				BF27681B24BB1AC200CC2CCF /* ContentView.swift in Sources */,
+				BF141E6C24C24FE100F9F90D /* SightMarkView.swift in Sources */,
+				BF3258F424C493D4001A3A5F /* ImageData.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,6 +519,7 @@
 				DEVELOPMENT_TEAM = KC8N9BMQJY;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = HowAwayAreYou/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -459,6 +540,7 @@
 				DEVELOPMENT_TEAM = KC8N9BMQJY;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = HowAwayAreYou/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

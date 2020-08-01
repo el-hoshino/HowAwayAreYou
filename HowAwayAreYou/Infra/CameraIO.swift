@@ -144,15 +144,29 @@ private extension AVCaptureDevice {
         let filtered = depthFormats.filter({
             CMFormatDescriptionGetMediaSubType($0.formatDescription) == kCVPixelFormatType_DepthFloat32
         })
-        let selectedFormat = filtered.max(by: {
-            first, second in CMVideoFormatDescriptionGetDimensions(first.formatDescription).width < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
-        })
+        let selectedFormat = filtered.max(on: \.dimensionWidth)
         
         try lockForConfiguration()
         defer { unlockForConfiguration() }
         
         activeDepthDataFormat = selectedFormat
         
+    }
+    
+}
+
+private extension AVCaptureDevice.Format {
+    
+    var dimensionWidth: Int32 {
+        CMVideoFormatDescriptionGetDimensions(formatDescription).width
+    }
+    
+}
+
+private extension Sequence {
+    
+    func max<Value: Comparable>(on transform: (Element) throws -> Value) rethrows -> Element? {
+        return try self.max(by: { try transform($0) < transform($1) })
     }
     
 }

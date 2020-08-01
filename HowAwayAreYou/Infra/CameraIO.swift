@@ -87,7 +87,7 @@ extension CameraIO: CaptureOutputDelegate {
         
         guard let sampleBuffer = synchronizedDataCollection.synchronizedData(for: videoDataOutput) as? AVCaptureSynchronizedSampleBufferData else { return }
         guard let depthData = synchronizedDataCollection.synchronizedData(for: depthDataOutput) as? AVCaptureSynchronizedDepthData else { return }
-        let faces = synchronizedDataCollection.synchronizedData(for: faceOutput) as! AVCaptureSynchronizedMetadataObjectData?
+        let faces = synchronizedDataCollection.synchronizedData(for: faceOutput) as! AVCaptureSynchronizedMetadataObjectData? // swiftlint:disable:this force_cast
         
         self.synchronizedDataPublisher.send((sampleBuffer.sampleBuffer, depthData.depthData, faces?.metadataObjects.map { $0.bounds } ?? []))
         

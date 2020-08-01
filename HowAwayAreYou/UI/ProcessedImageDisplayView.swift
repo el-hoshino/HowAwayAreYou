@@ -184,7 +184,7 @@ private extension Image {
     
 }
 
-struct CameraFinderView_Preview: PreviewProvider {
+struct ProcessedImageDisplayView_Preview: PreviewProvider { // swiftlint:disable:this type_name
     
     final class MockImageInput: ProcessedImageInputObject {
         
@@ -193,10 +193,10 @@ struct CameraFinderView_Preview: PreviewProvider {
         var running: Bool = false
         
         var imageData: ImageData? {
-           ImageData(uiImage:  #imageLiteral(resourceName: "DummyBackground"))
+           ImageData(uiImage: #imageLiteral(resourceName: "DummyBackground"))
         }
         
-        @Published var targetInfo: TargetInfo? = nil
+        @Published var targetInfo: TargetInfo?
         
         private func random(in range: ClosedRange<CGFloat>) -> CGFloat {
             CGFloat.random(in: range)

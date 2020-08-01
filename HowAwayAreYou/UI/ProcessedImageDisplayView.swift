@@ -33,6 +33,29 @@ struct ProcessedImageDisplayView<ImageInput: ProcessedImageInputObject>: View {
         }
     }
     
+    private var warningText: String {
+        switch imageInput.dangerLevel {
+        case .none:
+            return "Searching for face..."
+            
+        case .some(let level):
+            switch level {
+            case 0:
+                return "Safe social distance"
+                
+            case 0...0.5:
+                return "Approaching!"
+                
+            case 0.5...:
+                return "Warning: TOO CLOSE!!"
+                
+            default:
+                assertionFailure()
+                return ""
+            }
+        }
+    }
+    
     private func circleDiameter(by proxy: GeometryProxy) -> CGFloat {
         imageInput.targetDiameter(by: proxy) ?? proxy.size.width * 0.5
     }
@@ -41,14 +64,29 @@ struct ProcessedImageDisplayView<ImageInput: ProcessedImageInputObject>: View {
         targetPosition * proxy.size
     }
     
+    private func warningTextPosition(by proxy: GeometryProxy) -> CGPoint {
+        let positionForCircle = circlePosition(by: proxy)
+        let diameterForCircle = circleDiameter(by: proxy)
+        return .init(x: positionForCircle.x, y: positionForCircle.y + (diameterForCircle / 2) + 16)
+    }
+    
     var body: some View {
         Image.from(imageInput.imageData)
             .resizable()
             .aspectRatio(contentMode: .fill)
             .overlay(GeometryReader { (proxy) in
-                SightMarkView(status: self.targetStatus)
-                    .frame(width: self.circleDiameter(by: proxy), height: self.circleDiameter(by: proxy))
-                    .position(self.circlePosition(by: proxy))
+                ZStack {
+                    SightMarkView(status: self.targetStatus)
+                        .frame(width: self.circleDiameter(by: proxy), height: self.circleDiameter(by: proxy))
+                        .position(self.circlePosition(by: proxy))
+                    Text(self.warningText)
+                        .font(.headline)
+                        .padding(.horizontal, 10)
+                        .background(Color.white.opacity(0.5))
+                        .foregroundColor(.black)
+                        .cornerRadius(10)
+                        .position(self.warningTextPosition(by: proxy))
+                }
                     .animation(Animation.easeOut(duration: 0.2))
             })
             .onAppear {

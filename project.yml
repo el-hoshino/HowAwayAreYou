@@ -13,6 +13,7 @@ targets:
     type: application
     sources: HowAwayAreYou
     settings:
+      PRODUCT_BUNDLE_IDENTIFIER: net.crazism.HAAY
       MARKETING_VERSION: 0.1.0
     dependencies:
       - sdk: AVFoundation.framework

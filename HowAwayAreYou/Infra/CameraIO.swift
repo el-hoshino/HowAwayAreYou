@@ -125,9 +125,9 @@ extension CameraIO: ImageProcessorInput {
     }
     
     var dataPublisher: AnyPublisher<ImageProcessorInput.Data?, Never> {
-        synchronizedDataPublisher.map {
+        synchronizedDataPublisher.compactMap {
             guard let data = $0 else { return nil }
-            let sampleBuffer = CMSampleBufferGetImageBuffer(data.sampleBuffer)!
+            guard let sampleBuffer = CMSampleBufferGetImageBuffer(data.sampleBuffer) else { return nil }
             let depthData = data.depthData.depthDataMap
             let facesBounds = data.facesBounds
             return (sampleBuffer, depthData, facesBounds)

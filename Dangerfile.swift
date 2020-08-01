@@ -540,4 +540,3 @@ do {
 } catch {
     fail("Failed to find out the correct check routine. Please check if your PR is created from or into a correct branch.")
 }
-

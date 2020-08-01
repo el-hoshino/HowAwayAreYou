@@ -38,3 +38,27 @@ targets:
     sources: HowAwayAreYouUITests
     dependencies:
       - target: HowAwayAreYou
+schemes:
+  HowAwayAreYou:
+    templates:
+      - BaseScheme
+schemeTemplates:
+  BaseScheme:
+    build:
+      targets:
+        HowAwayAreYou: all
+        HowAwayAreYouTests: [test]
+        HowAwayAreYouUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets: [HowAwayAreYouTests, HowAwayAreYouUITests]
+      gatherCoverageData: true
+      coverageTargets: [HowAwayAreYou]
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

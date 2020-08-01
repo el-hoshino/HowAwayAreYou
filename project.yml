@@ -1,0 +1,40 @@
+name: HowAwayAreYou
+attributes:
+  ORGANIZATIONNAME: Crazism
+options:
+  bundleIdPrefix: net.crazism
+settings:
+  CODE_SIGN_STYLE: Automatic
+  DEVELOPMENT_TEAM: KC8N9BMQJY
+targets:
+  HowAwayAreYou:
+    platform: iOS
+    deploymentTarget: "13.0"
+    type: application
+    sources: HowAwayAreYou
+    settings:
+      MARKETING_VERSION: 0.1.0
+    dependencies:
+      - sdk: AVFoundation.framework
+    preBuildScripts:
+      - name: SwiftLint
+        script: |
+          if mint list | grep -q 'SwiftLint'; then
+            mint run swiftlint
+          else
+            echo "warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint"
+          fi
+  HowAwayAreYouTests:
+    platform: iOS
+    deploymentTarget: "13.0"
+    type: bundle.unit-test
+    sources: HowAwayAreYouTests
+    dependencies:
+      - target: HowAwayAreYou
+  HowAwayAreYouUITests:
+    platform: iOS
+    deploymentTarget: "13.0"
+    type: bundle.ui-testing
+    sources: HowAwayAreYouUITests
+    dependencies:
+      - target: HowAwayAreYou

@@ -88,3 +88,9 @@ fastlane/test_output
 # https://github.com/johnno1962/injectionforxcode
 
 iOSInjectionProject/
+
+# XcodeGen
+#
+# xcodegen is in use with project.yml, so it's safer to ignore .xcodeproj file
+
+*.xcodeproj

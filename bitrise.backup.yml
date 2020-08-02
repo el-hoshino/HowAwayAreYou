@@ -1,0 +1,435 @@
+app:
+  envs:
+  - XCODE_WORKSPACE_PATH: HowAwayAreYou.xcworkspace
+    opts:
+      is_expand: false
+  - XCODE_PROJECT_PATH: HowAwayAreYou.xcodeproj
+    opts:
+      is_expand: false
+  - XCODE_INFO_PLIST_PATH: HowAwayAreYou/Info.plist
+    opts:
+      is_expand: false
+  - BITRISE_SCHEME: HowAwayAreYou
+    opts:
+      is_expand: false
+  - APP_BUNDLE_ID: net.crazism.HAAY
+    opts:
+      is_expand: false
+  - DEVELOPER_TEAM_ID: KC8N9BMQJY
+    opts:
+      is_expand: false
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+format_version: "8"
+project_type: ios
+trigger_map:
+- push_branch: develop
+  workflow: ad_hoc-deploy
+- push_branch: master
+  workflow: app_store-deploy
+- pull_request_source_branch: '*'
+  pull_request_target_branch: master
+  workflow: fast-test
+- pull_request_source_branch: '*'
+  pull_request_target_branch: develop
+  workflow: fast-test-with-deploy
+workflows:
+  _archive:
+    steps:
+    - ios-auto-provision-appstoreconnect:
+        inputs:
+        - distribution_type: $ARCHIVE_METHOD
+    - xcode-archive:
+        inputs:
+        - project_path: $XCODE_WORKSPACE_PATH
+        - scheme: $BITRISE_SCHEME
+        - team_id: ""
+        - compile_bitcode: "no"
+        - export_method: $ARCHIVE_METHOD
+  _bootstrap:
+    steps:
+    - script:
+        inputs:
+        - content: |
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            echo "Set Git Credential"
+
+            git credential-osxkeychain store
+            host=github.com
+            protocol=https
+            username="${GITHUB_USER_NAME}"
+            password="${GITHUB_API_TOKEN}"
+        title: Set Git Credential
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            echo "Bootstrap"
+            sh bootstrap.sh
+        title: Bootstrap
+  _deploy-modification:
+    steps:
+    - set-ios-version:
+        inputs:
+        - bundle_version: $BITRISE_BUILD_NUMBER
+        - bundle_version_short: ""
+        - info_plist_file: $XCODE_INFO_PLIST_PATH
+  _deploy_to_app_store_connect:
+    steps:
+    - deploy-to-itunesconnect-deliver:
+        inputs:
+        - password: $APPLE_DEVELOPER_PASSWORD
+        - app_id: $APP_APPLE_ID
+        - team_id: $APPSTORE_UPLOAD_TEAM_ID
+        - itunescon_user: $APPLE_DEVELOPER_ACCOUNT
+  _deploy_to_bitrise:
+    steps:
+    - deploy-to-bitrise-io:
+        inputs:
+        - notify_user_groups: none
+  _generate-xcode-project:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            envman add --key GITHUB_ACCESS_TOKEN --value $GITHUB_API_TOKEN
+        title: Set GitHub Access Token for XcodeGen
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+            # write your script here
+            echo "Generate Xcode project"
+            mint run xcodegen
+        title: Generate Xcode project
+  _install-environment-dependencies:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            echo "Install Dependencies via Mint"
+
+            which mint > /dev/null || {
+              git clone https://github.com/yonaskolb/Mint.git
+              pushd Mint
+              swift run mint install yonaskolb/mint
+              popd
+            }
+
+            mint bootstrap --link
+        title: Mint Dependencies
+  _install-project-dependencies: {}
+  _pr-check:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+
+            # Setup token for danger
+            export DANGER_GITHUB_API_TOKEN="$GITHUB_API_TOKEN"
+
+            # Run danger
+            danger-swift ci
+        is_always_run: true
+        title: Run Danger
+  _pr-prebuild:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            gem install xcpretty-json-formatter
+            envman add --key XCPRETTY_JSON_FORMATTER --value `xcpretty-json-formatter`
+            envman add --key XCPRETTY_JSON_FILE_OUTPUT --value "result.json"
+        is_always_run: true
+        title: Install XCPretty JSON Formatter
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+
+            # Install Danger
+            echo "Install Danger-Swift"
+            brew install danger/tap/danger-swift
+        is_always_run: true
+        title: Install Danger with Plugins
+  _preparation:
+    steps:
+    - activate-ssh-key:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone: {}
+  _pull-cache:
+    steps:
+    - cache-pull: {}
+  _push-cache:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # write your script here
+            set -ev
+
+            envman add --key MINT_BIN_PATH --value "/usr/local/bin/mint"
+            envman add --key MINT_HOME_PATH --value "/usr/local/lib/mint"
+        title: Mint Cache Settings
+    - cache-push:
+        inputs:
+        - cache_paths: |-
+            $BITRISE_CACHE_DIR
+            $MINT_BIN_PATH
+            $MINT_HOME_PATH
+        - compress_archive: "true"
+        run_if: .IsCI
+  _send_deploy_result_to_slack:
+    steps:
+    - create-install-page-qr-code: {}
+    - slack:
+        inputs:
+        - image_url: $BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL
+        - pretext: '*Deploy Succeeded!*'
+        - pretext_on_error: '*Deploy Failed!*'
+        - webhook_url: $SLACK_INCOMMING_WEBHOOK
+    - comment-on-github-pull-request:
+        inputs:
+        - body: |-
+            Install Link:
+            ![$BITRISE_PUBLIC_INSTALL_PAGE_URL]($BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL)
+        - personal_access_token: $GITHUB_API_TOKEN
+  _send_environment_update_check_to_slack:
+    steps:
+    - slack:
+        inputs:
+        - fields: |-
+            App|${BITRISE_APP_TITLE}
+            Branch|${BITRISE_GIT_BRANCH}
+            Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
+        - pretext: '*Environment Update Check Succeeded!*'
+        - pretext_on_error: '*Environment Update Check Failed!*'
+        - webhook_url: $SLACK_INCOMMING_WEBHOOK
+  _send_test_result_to_slack:
+    steps:
+    - slack:
+        inputs:
+        - fields: |-
+            App|${BITRISE_APP_TITLE}
+            Branch|${BITRISE_GIT_BRANCH}
+            Workflow|${BITRISE_TRIGGERED_WORKFLOW_ID}
+        - pretext: '*Test Succeeded!*'
+        - pretext_on_error: '*Test Failed!*'
+        - webhook_url: $SLACK_INCOMMING_WEBHOOK
+  _xcode-test:
+    steps:
+    - xcode-test:
+        inputs:
+        - simulator_device: iPhone 11
+        - is_clean_build: "yes"
+        - xcpretty_test_options: -f ${XCPRETTY_JSON_FORMATTER} --color --report html
+            --output "${BITRISE_DEPLOY_DIR}/xcode-test-results-${BITRISE_SCHEME}.html"
+        - generate_code_coverage_files: "yes"
+        - project_path: $XCODE_WORKSPACE_PATH
+  ad_hoc-deploy:
+    after_run:
+    - _archive
+    - _deploy_to_bitrise
+    - _send_deploy_result_to_slack
+    before_run:
+    - _preparation
+    - _pull-cache
+    - _install-environment-dependencies
+    - _generate-xcode-project
+    - _install-project-dependencies
+    - _push-cache
+    - _deploy-modification
+    envs:
+    - ARCHIVE_METHOD: ad-hoc
+      opts:
+        is_expand: false
+  app_store-deploy:
+    after_run:
+    - _archive
+    - _deploy_to_app_store_connect
+    - _deploy_to_bitrise
+    - _send_deploy_result_to_slack
+    before_run:
+    - _preparation
+    - _bootstrap
+    - _deploy-modification
+    envs:
+    - ARCHIVE_METHOD: app-store
+      opts:
+        is_expand: false
+  backup_bitrise_yml:
+    after_run:
+    - _send_environment_update_check_to_slack
+    before_run:
+    - _preparation
+    envs:
+    - PR_ASSIGNEE: el-hoshino
+      opts:
+        is_expand: false
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+
+            # Reference: https://blog.anzfactory.xyz/articles/20191203/bitrise-async-yml/
+
+            # fail if any commands fails
+            set -e
+            # debug log
+            set -x
+
+            # Download bitrise.yml from Bitrise
+            curl -o "bitrise.backup.yml" -H "Authorization: token ${BITRISE_API_ACCESS_TOKEN}" "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/bitrise.yml"
+
+            # Check diff, and exit if no diff
+            git add -N .
+            if git diff --quiet --exit-code ; then
+              exit 0
+            fi
+
+            # Stage diff
+            git add .
+
+            # Install hub if needed
+            if which hub > /dev/null ; then
+              echo "hub installed"
+            else
+              echo "Install hub"
+              brew install hub
+            fi
+
+            # Configure hub
+            mkdir -p $HOME/.config
+            echo "github.com:
+            - oauth_token: $GITHUB_API_TOKEN
+              user: $GITHUB_USER_NAME
+              protocol: https
+            " > "$HOME/.config/hub"
+
+            # Prepare for Pull Request
+            commit_message="Backup bitrise.yml"
+            now=$(date "+%Y-%m-%d_%H-%M-%S")
+            base_branch=$(git rev-parse --abbrev-ref HEAD)
+            head_branch="ci/bitris-yml-backup-$now"
+            assignee="$PR_ASSIGNEE"
+            pr_message_file="pr.txt"
+            echo "Backup bitrise.yml" > "$pr_message_file"
+
+            # Create head branch
+            git checkout -b "$head_branch"
+
+            # commit
+            git -c user.name="$GITHUB_USER_NAME" -c user.email="${GITHUB_USER_NAME}@users.noreply.github.com" commit -m "$commit_message"
+
+            # create pull request
+            git push origin "$head_branch"
+            hub pull-request -F "$pr_message_file" -b "$base_branch" -a "$assignee"
+        title: Backup current bitrise.yml
+  fast-test:
+    after_run:
+    - _xcode-test
+    - _pr-check
+    - _send_test_result_to_slack
+    before_run:
+    - _preparation
+    - _pull-cache
+    - _install-environment-dependencies
+    - _generate-xcode-project
+    - _install-project-dependencies
+    - _pr-prebuild
+    - _push-cache
+  fast-test-with-deploy:
+    after_run:
+    - _xcode-test
+    - _pr-check
+    - _send_test_result_to_slack
+    - _deploy-modification
+    - _archive
+    - _deploy_to_bitrise
+    - _send_deploy_result_to_slack
+    before_run:
+    - _preparation
+    - _pull-cache
+    - _install-environment-dependencies
+    - _generate-xcode-project
+    - _install-project-dependencies
+    - _pr-prebuild
+    - _push-cache
+    envs:
+    - ARCHIVE_METHOD: development
+      opts:
+        is_expand: false
+  full-test:
+    after_run:
+    - _xcode-test
+    - _pr-check
+    - _send_test_result_to_slack
+    before_run:
+    - _preparation
+    - _bootstrap
+    - _pr-prebuild
+  update-cache:
+    before_run:
+    - _preparation
+    - _pull-cache
+    - _install-environment-dependencies
+    - _generate-xcode-project
+    - _install-project-dependencies
+    - _pr-prebuild
+    - _push-cache

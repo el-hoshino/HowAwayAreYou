@@ -184,7 +184,7 @@ private extension Image {
     
 }
 
-struct ProcessedImageDisplayView_Preview: PreviewProvider { // swiftlint:disable:this type_name
+struct ProcessedImageDisplayView_Previews: PreviewProvider {
     
     final class MockImageInput: ProcessedImageInputObject {
         

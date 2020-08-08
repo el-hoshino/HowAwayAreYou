@@ -15,6 +15,7 @@ targets:
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: net.crazism.HAAY
       MARKETING_VERSION: 0.1.0
+      TARGETED_DEVICE_FAMILY: 1
     dependencies:
       - sdk: AVFoundation.framework
     preBuildScripts:

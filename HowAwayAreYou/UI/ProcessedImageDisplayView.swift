@@ -23,13 +23,30 @@ struct ProcessedImageDisplayView<ImageInput: ProcessedImageInputObject>: View {
         imageInput.targetInfo?.orientatedRelativePosition ?? .init(x: 0.5, y: 0.5)
     }
     
-    private var targetStatus: SightMarkView.Status {
+    private var targetStatus: TargetStatus {
+        .init(dangerLevel: imageInput.dangerLevel)
+    }
+    
+    private var warningText: String {
         switch imageInput.dangerLevel {
         case .none:
-            return .open
+            return "Searching for face..."
             
         case .some(let level):
-            return .locked(dangerLevel: level)
+            switch level {
+            case 0:
+                return "Safe social distance"
+                
+            case 0...0.5:
+                return "Approaching!"
+                
+            case 0.5...:
+                return "Warning: TOO CLOSE!!"
+                
+            default:
+                assertionFailure()
+                return ""
+            }
         }
     }
     
@@ -41,14 +58,29 @@ struct ProcessedImageDisplayView<ImageInput: ProcessedImageInputObject>: View {
         targetPosition * proxy.size
     }
     
+    private func warningTextPosition(by proxy: GeometryProxy) -> CGPoint {
+        let positionForCircle = circlePosition(by: proxy)
+        let diameterForCircle = circleDiameter(by: proxy)
+        return .init(x: positionForCircle.x, y: positionForCircle.y + (diameterForCircle / 2) + 16)
+    }
+    
     var body: some View {
         Image.from(imageInput.imageData)
             .resizable()
             .aspectRatio(contentMode: .fill)
             .overlay(GeometryReader { (proxy) in
-                SightMarkView(status: self.targetStatus)
-                    .frame(width: self.circleDiameter(by: proxy), height: self.circleDiameter(by: proxy))
-                    .position(self.circlePosition(by: proxy))
+                ZStack {
+                    SightMarkView(status: self.targetStatus)
+                        .frame(width: self.circleDiameter(by: proxy), height: self.circleDiameter(by: proxy))
+                        .position(self.circlePosition(by: proxy))
+                    Text(self.warningText)
+                        .font(.headline)
+                        .padding(.horizontal, 10)
+                        .background(Color.white.opacity(0.5))
+                        .foregroundColor(.black)
+                        .cornerRadius(10)
+                        .position(self.warningTextPosition(by: proxy))
+                }
                     .animation(Animation.easeOut(duration: 0.2))
             })
             .onAppear {
@@ -146,7 +178,7 @@ private extension Image {
     
 }
 
-struct CameraFinderView_Preview: PreviewProvider {
+struct ProcessedImageDisplayView_Previews: PreviewProvider {
     
     final class MockImageInput: ProcessedImageInputObject {
         
@@ -155,10 +187,10 @@ struct CameraFinderView_Preview: PreviewProvider {
         var running: Bool = false
         
         var imageData: ImageData? {
-           ImageData(uiImage:  #imageLiteral(resourceName: "DummyBackground"))
+           ImageData(uiImage: #imageLiteral(resourceName: "DummyBackground"))
         }
         
-        @Published var targetInfo: TargetInfo? = nil
+        @Published var targetInfo: TargetInfo?
         
         private func random(in range: ClosedRange<CGFloat>) -> CGFloat {
             CGFloat.random(in: range)

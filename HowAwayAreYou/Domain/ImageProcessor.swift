@@ -112,14 +112,6 @@ extension ImageProcessor: ProcessedImageInputObject {
     
 }
 
-private extension CGRect {
-    
-    var center: CGPoint {
-        .init(x: midX, y: midY)
-    }
-    
-}
-
 private extension CGPoint {
     
     static func / (lhs: CGPoint, rhs: CGSize) -> CGPoint {

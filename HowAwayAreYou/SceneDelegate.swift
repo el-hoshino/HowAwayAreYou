@@ -10,16 +10,6 @@ import UIKit
 import SwiftUI
 import Combine
 
-import CoreMedia
-
-private final class MockCamera: ImageProcessorInput {
-    var running: Bool = false
-    let publisher: PassthroughSubject<ImageProcessorInput.Data?, Never> = .init()
-    var dataPublisher: AnyPublisher<ImageProcessorInput.Data?, Never> {
-        publisher.eraseToAnyPublisher()
-    }
-}
-
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
@@ -45,8 +35,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 let contentView = ProcessedImageDisplayView(imageInput: imageProcessor)
                 viewController = UIHostingController(rootView: contentView)
             } else {
-                let processor = ImageProcessor(input: MockCamera())
-                let contentView = ProcessedImageDisplayView(imageInput: processor)
+                let contentView = CameraWarningView()
                 viewController = UIHostingController(rootView: contentView)
             }
             window.rootViewController = viewController
@@ -86,3 +75,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 }
 
+private struct CameraWarningView: View {
+    
+    var body: some View {
+        Text("""
+            😢Failed to launch camera.
+            
+            Please note that this app needs dual-camera or later to measure distance.
+            """
+        )
+    }
+    
+}

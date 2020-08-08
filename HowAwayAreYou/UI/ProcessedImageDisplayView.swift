@@ -23,14 +23,8 @@ struct ProcessedImageDisplayView<ImageInput: ProcessedImageInputObject>: View {
         imageInput.targetInfo?.orientatedRelativePosition ?? .init(x: 0.5, y: 0.5)
     }
     
-    private var targetStatus: SightMarkView.Status {
-        switch imageInput.dangerLevel {
-        case .none:
-            return .open
-            
-        case .some(let level):
-            return .locked(dangerLevel: level)
-        }
+    private var targetStatus: TargetStatus {
+        .init(dangerLevel: imageInput.dangerLevel)
     }
     
     private var warningText: String {

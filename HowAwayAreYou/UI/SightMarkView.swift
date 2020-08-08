@@ -7,96 +7,63 @@
 //
 
 import SwiftUI
+import UIKit
 
-struct SightMarkView: View {
+struct SightMarkView: UIViewRepresentable {
     
-    enum Status {
-        
-        case open
-        case locked(dangerLevel: Double)
-        
-        var spins: Bool {
-            switch self {
-            case .open:
-                return true
-            case .locked:
-                return false
-            }
-        }
-        
-        var color: Color {
-            switch self {
-            case .open:
-                return Color.gray.opacity(0.8)
-                
-            case .locked(dangerLevel: let level):
-                return .init(hue: (1 - level) / .pi, saturation: 0.8, brightness: 0.8)
-            }
-        }
-        
+    var status: TargetStatus
+    
+    init(status: TargetStatus) {
+        self.status = status
     }
     
-    let status: Status
-    
-    @State private var angles: [Double] = [0, 0, 0, 0]
-        
-    var body: some View {
-        ZStack {
-            Circle()
-                .inset(by: 5)
-                .trim(from: 0.02, to: 0.23)
-                .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .butt))
-                .fill(status.color)
-                .rotationEffect(.radians(angles[0]))
-            Circle()
-                .inset(by: 10)
-                .trim(from: 0.27, to: 0.48)
-                .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .butt))
-                .fill(status.color)
-                .rotationEffect(.radians(-angles[1]))
-            Circle()
-                .inset(by: 12)
-                .trim(from: 0.52, to: 0.73)
-                .stroke(style: StrokeStyle(lineWidth: 10, lineCap: .butt))
-                .fill(status.color)
-                .rotationEffect(.radians(angles[2]))
-            ZStack {
-                Circle()
-                    .trim(from: 0.77, to: 0.98)
-                    .stroke(style: StrokeStyle(lineWidth: 5, lineCap: .butt))
-                    .fill(status.color)
-                
-                Circle()
-                    .inset(by: 15)
-                    .trim(from: 0.77, to: 0.98)
-                    .stroke(style: StrokeStyle(lineWidth: 12, lineCap: .butt))
-                    .fill(status.color)
-            }
-                .rotationEffect(.radians(-angles[3]))
-        }
-        .onAppear {
-            self.toggleSpinAnimation(spins: self.status.spins)
-        }
+    func makeUIView(context: Context) -> SightMarkUIView {
+        SightMarkUIView(status: status)
     }
     
-    func toggleSpinAnimation(spins: Bool) {
-        for i in self.angles.indices {
-            withAnimation(.strokeAnimation(spins: spins)) {
-                self.angles[i] = spins ? .pi * 2 : 0
-            }
-        }
+    func updateUIView(_ uiView: SightMarkUIView, context: Context) {
+        uiView.status = status
     }
     
 }
 
-private extension Animation {
+final class SightMarkUIView: UIView {
     
-    private static func repeatAnimation(duration: TimeInterval) -> Animation {
-        linear(duration: duration).repeatForever(autoreverses: false)
+    var status: TargetStatus {
+        didSet {
+            refresh()
+        }
     }
     
-    static func strokeAnimation(spins: Bool) -> Animation {
-        spins ? repeatAnimation(duration: .random(in: 2 ... 5)) : .easeOut(duration: 0.2)
+    private let markViews: [MarkArc]
+        
+    init(status: TargetStatus) {
+        
+        self.markViews = MarkArc.makeArcs(status: status)
+        self.status = status
+        
+        super.init(frame: .zero)
+        
+        backgroundColor = .clear
+        markViews.forEach({ addSubview($0) })
+        
+    }
+    
+    override init(frame: CGRect) {
+        fatalError("init(frame:) has not been implemented")
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        markViews.forEach({ $0.setNeedsDisplay() })
+    }
+    
+    private func refresh() {
+        markViews.forEach { $0.update(status) }
     }
     
 }

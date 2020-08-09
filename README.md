@@ -17,9 +17,9 @@ HowAwayAreYou, or shorten as Haay, is an iPhone app to help you keeping social d
 
 1. Run `bootstrap.sh` script to build the environment.
 
-```sh
-$ ./bootstrap.sh
-```
+   ```sh
+   ./bootstrap.sh
+   ```
 
 2. Open `HowAwayAreYou.xcworkspace` with Xcode.
 

@@ -9,7 +9,7 @@ settings:
 targets:
   HowAwayAreYou:
     platform: iOS
-    deploymentTarget: "13.0"
+    deploymentTarget: "14.0"
     type: application
     sources: HowAwayAreYou
     settings:
@@ -28,14 +28,14 @@ targets:
           fi
   HowAwayAreYouTests:
     platform: iOS
-    deploymentTarget: "13.0"
+    deploymentTarget: "14.0"
     type: bundle.unit-test
     sources: HowAwayAreYouTests
     dependencies:
       - target: HowAwayAreYou
   HowAwayAreYouUITests:
     platform: iOS
-    deploymentTarget: "13.0"
+    deploymentTarget: "14.0"
     type: bundle.ui-testing
     sources: HowAwayAreYouUITests
     dependencies:

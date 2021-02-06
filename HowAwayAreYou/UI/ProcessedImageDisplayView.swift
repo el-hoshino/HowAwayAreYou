@@ -17,7 +17,7 @@ protocol ProcessedImageInputObject: ObservableObject {
 
 struct ProcessedImageDisplayView<ImageInput: ProcessedImageInputObject>: View {
     
-    @ObservedObject var imageInput: ImageInput
+    @StateObject var imageInput: ImageInput
     
     private var targetPosition: CGPoint {
         imageInput.targetInfo?.orientatedRelativePosition ?? .init(x: 0.5, y: 0.5)

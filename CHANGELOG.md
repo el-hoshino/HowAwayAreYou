@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Deployment target is now iOS 14+
+
 ## [1.0.0] - 2020-08-09
 
 - Initial release.

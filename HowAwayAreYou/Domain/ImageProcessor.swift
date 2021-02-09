@@ -15,6 +15,7 @@ protocol ImageProcessorInput: AnyObject {
     // For some reason (I guess it's something related to the frame rate) if you don't ask the CameraIO for metadata objects like faces,
     // CMSampleBufferGetImageBuffer will fail to get the image buffer from the output of AVCaptureDataOutputSynchronizer.
     // It's really weird that even I collect the metadata objects in CameraIO and just ignore it on publisher map, the problem still occurs.
+    // TODO: ↑ Maybe this is now solved on iOS 14. Should try later.
     typealias Data = (sampleVideoPixelBuffer: CVPixelBuffer, depthDataPixelBuffer: CVPixelBuffer, facesRelativeBounds: [CGRect])
     var dataPublisher: AnyPublisher<Data?, Never> { get }
 }

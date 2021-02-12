@@ -15,6 +15,7 @@ protocol ImageProcessorInput: AnyObject {
     // For some reason (I guess it's something related to the frame rate) if you don't ask the CameraIO for metadata objects like faces,
     // CMSampleBufferGetImageBuffer will fail to get the image buffer from the output of AVCaptureDataOutputSynchronizer.
     // It's really weird that even I collect the metadata objects in CameraIO and just ignore it on publisher map, the problem still occurs.
+    // TODO: ↑ Maybe this is now solved on iOS 14. Should try later.
     typealias Data = (sampleVideoPixelBuffer: CVPixelBuffer, depthDataPixelBuffer: CVPixelBuffer, facesRelativeBounds: [CGRect])
     var dataPublisher: AnyPublisher<Data?, Never> { get }
 }
@@ -25,15 +26,8 @@ final class ImageProcessor<Input: ImageProcessorInput>: ObservableObject {
     private let context: CIContext
     private var cancellables: Set<AnyCancellable> = []
     
-    @Published private var publishedImageData: ImageData?
-    @Published private var publishedTargetInfo: TargetInfo?
-    
-    private func updatePublished(imageData: ImageData?, targetInfo: TargetInfo?) {
-        DispatchQueue.main.async {
-            self.publishedImageData = imageData
-            self.publishedTargetInfo = targetInfo
-        }
-    }
+    private typealias Data = (imageData: ImageData, targetInfo: TargetInfo?)
+    @Published private var data: Data?
     
     init(input: Input) {
         
@@ -47,37 +41,55 @@ final class ImageProcessor<Input: ImageProcessorInput>: ObservableObject {
     
     private func observePixelBuffer() {
         
-        let cancellable = input.dataPublisher.sink { [unowned self] data in
-            guard let data = data else {
-                self.updatePublished(imageData: nil, targetInfo: nil)
-                return
-            }
-            let sampleBuffer = data.sampleVideoPixelBuffer
-            let depthBuffer = data.depthDataPixelBuffer
-            
-            let imageOrientation: ImageData.Orientation = .right
-            
-            let ciImage = self.makeCIImage(from: sampleBuffer)
-            let cgImage = self.context.createCGImage(ciImage, from: ciImage.extent)!
-            let imageData = ImageData(cgImage: cgImage, scale: 1, orientation: imageOrientation)
-            
-            let sortedFacesRelativeBounds = data.facesRelativeBounds.sorted(by: \.center.squaredDistanceToRelativeCenter, <)
-            guard let targetFaceRelativeBounds = sortedFacesRelativeBounds.first else {
-                self.updatePublished(imageData: imageData, targetInfo: nil)
-                return
-            }
-            
-            let distance = self.findDistance(for: targetFaceRelativeBounds, from: depthBuffer)
-            let targetInfo = TargetInfo(relativePosition: targetFaceRelativeBounds.center,
-                                        relativeSize: targetFaceRelativeBounds.size,
-                                        orientation: imageOrientation,
-                                        distance: distance)
-            
-            self.updatePublished(imageData: imageData, targetInfo: targetInfo)
-            
+        input.dataPublisher
+            .map({ [unowned self] in self.makePublishingData(from: $0) })
+            .receive(on: RunLoop.main)
+            .assign(to: \.data, on: self)
+            .store(in: &cancellables)
+                
+    }
+    
+    private func findImageData(from inputData: ImageProcessorInput.Data, imageOrientation: ImageData.Orientation) -> ImageData {
+        
+        let sampleBuffer = inputData.sampleVideoPixelBuffer
+        
+        let ciImage = self.makeCIImage(from: sampleBuffer)
+        let cgImage = self.context.createCGImage(ciImage, from: ciImage.extent)!
+        let imageData = ImageData(cgImage: cgImage, scale: 1, orientation: imageOrientation)
+        
+        return imageData
+        
+    }
+    
+    private func findTargetInfo(from inputData: ImageProcessorInput.Data, imageOrientation: ImageData.Orientation) -> TargetInfo? {
+        
+        let sortedFacesRelativeBounds = inputData.facesRelativeBounds.sorted(by: \.center.squaredDistanceToRelativeCenter, <)
+        guard let targetFaceRelativeBounds = sortedFacesRelativeBounds.first else {
+            return nil
         }
         
-        cancellables.insert(cancellable)
+        let depthBuffer = inputData.depthDataPixelBuffer
+        let distance = self.findDistance(for: targetFaceRelativeBounds, from: depthBuffer)
+        let targetInfo = TargetInfo(relativePosition: targetFaceRelativeBounds.center,
+                                    relativeSize: targetFaceRelativeBounds.size,
+                                    orientation: imageOrientation,
+                                    distance: distance)
+        
+        return targetInfo
+        
+    }
+    
+    private func makePublishingData(from inputData: ImageProcessorInput.Data?) -> Data? {
+        
+        guard let inputData = inputData else {
+            return nil
+        }
+        
+        let imageOrientation = ImageData.Orientation.right
+        let imageData = findImageData(from: inputData, imageOrientation: imageOrientation)
+        let targetInfo = findTargetInfo(from: inputData, imageOrientation: imageOrientation)
+        
+        return (imageData, targetInfo)
         
     }
     
@@ -103,11 +115,11 @@ extension ImageProcessor: ProcessedImageInputObject {
     }
     
     var imageData: ImageData? {
-        publishedImageData
+        data?.imageData
     }
     
     var targetInfo: TargetInfo? {
-        publishedTargetInfo
+        data?.targetInfo
     }
     
 }

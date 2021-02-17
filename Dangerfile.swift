@@ -518,6 +518,7 @@ SwiftLint.lint(.modifiedAndCreatedFiles(directory: nil), inline: true)
 XCodeSummary(filePath: "result.json", onlyShowSummaryInDiffFiles: true).report()
 
 // Xcode test coverage check.
+message(ProcessInfo.xcTestResultPath)
 Coverage.xcodeBuildCoverage(.xcresultBundle(ProcessInfo.xcTestResultPath), minimumCoverage: 60)
 
 // PR routine check.

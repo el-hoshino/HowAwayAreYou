@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Fail whole script when any step fails
 set -e

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Fail whole script when any step fails
+set -e
+
 # Install mint if needed
 which mint > /dev/null || {
   git clone https://github.com/yonaskolb/Mint.git

@@ -497,23 +497,6 @@ private extension ProcessInfo {
     
 }
 
-private extension Process {
-    
-    @discardableResult
-    static func exec(_ args: String...) -> Int32 {
-        let task = Process()
-        task.launchPath = "/usr/bin/env"
-        task.arguments = args
-        task.launch()
-        task.waitUntilExit()
-        return task.terminationStatus
-    }
-
-}
-
-// Move out from current Danger directory
-Process.exec("cd ../")
-
 // MARK: - Check routine
 let danger = Danger()
 

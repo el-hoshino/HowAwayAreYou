@@ -10,6 +10,7 @@ which mint > /dev/null || {
   ## so temporarily using `make` instead of `mint install`
   make
   popd
+  rm -rf Mint
 }
 
 # Install dependencies via mint

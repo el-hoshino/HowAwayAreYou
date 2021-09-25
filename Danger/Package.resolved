@@ -1,0 +1,79 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "DangerSwiftCoverage",
+        "repositoryURL": "https://github.com/f-meloni/danger-swift-coverage.git",
+        "state": {
+          "branch": null,
+          "revision": "6a21a6e595e2b13443428942ce128b3ba6b827ee",
+          "version": "1.2.1"
+        }
+      },
+      {
+        "package": "DangerXCodeSummary",
+        "repositoryURL": "https://github.com/f-meloni/danger-swift-xcodesummary.git",
+        "state": {
+          "branch": null,
+          "revision": "289d5136cead3d4b1eae509acc3f0b044252fc6c",
+          "version": "1.2.1"
+        }
+      },
+      {
+        "package": "DangerSwiftHammer",
+        "repositoryURL": "https://github.com/el-hoshino/DangerSwiftHammer.git",
+        "state": {
+          "branch": null,
+          "revision": "68f6cf58dd093d9e7a2f055c12b5d6ef25679478",
+          "version": "0.1.2"
+        }
+      },
+      {
+        "package": "Logger",
+        "repositoryURL": "https://github.com/shibapm/Logger",
+        "state": {
+          "branch": null,
+          "revision": "53c3ecca5abe8cf46697e33901ee774236d94cce",
+          "version": "0.2.3"
+        }
+      },
+      {
+        "package": "OctoKit",
+        "repositoryURL": "https://github.com/nerdishbynature/octokit.swift",
+        "state": {
+          "branch": null,
+          "revision": "9521cdff919053868ab13cd08a228f7bc1bde2a9",
+          "version": "0.11.0"
+        }
+      },
+      {
+        "package": "RequestKit",
+        "repositoryURL": "https://github.com/nerdishbynature/RequestKit.git",
+        "state": {
+          "branch": null,
+          "revision": "fd5e9e99aada7432170366c9e95967011ce13bad",
+          "version": "2.4.0"
+        }
+      },
+      {
+        "package": "danger-swift",
+        "repositoryURL": "https://github.com/danger/swift.git",
+        "state": {
+          "branch": null,
+          "revision": "5b246e6b7918f8131075c30b6caece35ff38e74f",
+          "version": "3.11.1"
+        }
+      },
+      {
+        "package": "Version",
+        "repositoryURL": "https://github.com/mxcl/Version",
+        "state": {
+          "branch": null,
+          "revision": "200046c93f6d5d78a6d72bfd9c0b27a95e9c0a2b",
+          "version": "1.2.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

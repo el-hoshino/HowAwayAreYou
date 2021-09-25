@@ -4,7 +4,11 @@
 which mint > /dev/null || {
   git clone https://github.com/yonaskolb/Mint.git
   pushd Mint
-  swift run mint install yonaskolb/mint
+  ## Since 0.17.0 Mint has changed $MINT_PATH and $MINT_LINK_PATH
+  ## which needs manually adding these paths to $PATH.
+  ## This made it tricky to install mint with mint
+  ## so temporarily using `make` instead of `mint install`
+  make
   popd
 }
 
